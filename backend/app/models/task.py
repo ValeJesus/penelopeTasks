@@ -1,5 +1,8 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
-from backend.app import Base
+from sqlalchemy.orm import relationship
+
+from app.database.database import Base
+
 
 class Task(Base):
     __tablename__ = "tasks"
@@ -8,5 +11,9 @@ class Task(Base):
     titulo = Column(String, nullable=False)
     descricao = Column(String)
     status = Column(String, default="PENDENTE")
+    prioridade = Column(String, default="MEDIA")
+    categoria = Column(String, nullable=True)
 
-    usuario_id = Column(Integer, ForeignKey("users.id"))
+    usuario_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    usuario = relationship("User", back_populates="tasks")

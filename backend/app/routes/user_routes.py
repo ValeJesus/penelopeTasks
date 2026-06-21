@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.database.database import SessionLocal
+from app.auth import gerar_hash_senha
+from app.database.database import get_db
 from app.models.user import User
-from app.schemas.user_schema import UserCreate
+from app.schemas.user_schema import UserCreate, UserResponse
 
 router = APIRouter(
     prefix="/users",
@@ -11,16 +12,7 @@ router = APIRouter(
 )
 
 
-def get_db():
-    db = SessionLocal()
-
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-@router.post("/")
+@router.post("/", response_model=UserResponse)
 def create_user(
     user: UserCreate,
     db: Session = Depends(get_db)
@@ -39,7 +31,7 @@ def create_user(
     novo_usuario = User(
         nome=user.nome,
         email=user.email,
-        senha=user.senha
+        senha=gerar_hash_senha(user.senha)
     )
 
     db.add(novo_usuario)
@@ -49,7 +41,7 @@ def create_user(
     return novo_usuario
 
 
-@router.get("/")
+@router.get("/", response_model=list[UserResponse])
 def list_users(
     db: Session = Depends(get_db)
 ):
